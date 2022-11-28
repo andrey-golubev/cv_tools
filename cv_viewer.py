@@ -132,11 +132,20 @@ class InfoOutput:
         output.close()
         self._buf.append(line)
 
-def invoke_preprocessor(img, user_script):
-    if user_script:
-        return user_script.preprocess(img)
-    else:
-        return img
+def invoke_image_loader(path, user_script):
+    def fallback(path):
+        print('loading with cv_viewer')
+        return cv2.imread(path)
+
+    if not user_script:
+        return fallback(path)
+
+    try:
+        from user_script import load_image
+        print('loading with user code')
+        return load_image(path)
+    except ImportError:
+        return fallback(path)
 
 def invoke_whole_image_processor(img, user_script, output_buffer: InfoOutput):
     global DRAW_BUFFER
@@ -226,10 +235,7 @@ def main():
         user_script = import_module(user_script_path)
         jurigged.watch(user_script_path)
 
-    # read input and preprocess it with user code
-    original = cv2.imread(args.image_file)
-    original = invoke_preprocessor(original, user_script)
-
+    original = invoke_image_loader(args.image_file, user_script)
     # Note: .copy() changes the data pointer! (so we need global variable)
     DRAW_BUFFER = original.copy()
 

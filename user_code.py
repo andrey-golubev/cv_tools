@@ -16,6 +16,7 @@ def process_image(src_image, dst_image, output_buffer):
     dst_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
     return dst_image
 
-def preprocess(src_image):
+def load_image(path):
+    src_image = cv2.imread(path)
     # cv2.blur(src_image, ksize=(21, 21), dst=src_image)
     return src_image
